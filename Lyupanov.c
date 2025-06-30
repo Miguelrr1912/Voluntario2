@@ -75,6 +75,10 @@ void runge_kuttap(cuerpos *cuerpo, FILE *file)
 int main (void)
 {
     double desv, desvsum=0, coeflyu=0; 
+    double energias[] = {1, 3, 5, 10, 15};
+    int num_energias = 5,j,E;
+    cuerpos cuerpo;
+    cuerpos cuerpoperturbado;
 
     FILE *file, *file2, *file3, *file4;
     file = fopen("Pendulo_dobleA2.txt", "w");
@@ -95,22 +99,21 @@ int main (void)
         return 1;
     }
 
-
-    //Defino las variables
-    cuerpos cuerpo;
-    cuerpos cuerpoperturbado;
-    double E;
-    E=15;
-    cuerpo.thetha=0.1;
-    cuerpo.phi=0.6;
+    
+    //Lo hago para 5 energías diferentes
+    for(j=0; j<num_energias;j++)
+    {
+    E=energias[j];
+    cuerpo.thetha=0.15;
+    cuerpo.phi=0.08;
     cuerpo.thethap=sqrt(2*(E+9.8*(2*cos(cuerpo.thetha)+cos(cuerpo.phi))-3*9.8));
     //cuerpo.thethap=0.0;
     cuerpo.phip=0.0;
 
-    desv=0.01;
-    cuerpoperturbado.thetha=cuerpo.thetha+desv;
-    cuerpoperturbado.phi=cuerpo.phi;    
-    cuerpoperturbado.thethap=cuerpo.thetha;
+    desv=0.007;
+    cuerpoperturbado.thetha=cuerpo.thetha;
+    cuerpoperturbado.phi=cuerpo.phi+desv;    
+    cuerpoperturbado.thethap=cuerpo.thethap;
     cuerpoperturbado.phip=cuerpo.phip;
     
 
@@ -118,16 +121,17 @@ int main (void)
     fprintf(file, "%lf, %lf, %lf, %lf\n", cuerpo.thetha, cuerpo.phi, cuerpo.thethap, cuerpo.phip);
     fprintf(file2, "%lf, %lf, %lf, %lf\n", cuerpoperturbado.thetha, cuerpoperturbado.phi, cuerpoperturbado.thethap, cuerpoperturbado.phip);
 
-    //Voy a hacer el ciclo para calcular la trayectoria
-    for(double i=1; i<100; i += h)
+
+    for(double i=0; i<100; i += h)
     {
         runge_kuttap(&cuerpo, file);
         runge_kuttap(&cuerpoperturbado,file2);
 
         //Calculo la desviación 
-        desvsum=fabs(cuerpo.thetha-cuerpoperturbado.thetha);
-
-        //normalizo 
+        desvsum=sqrt(pow((cuerpo.thetha-cuerpoperturbado.thetha),2)+
+                     pow((cuerpo.phi-cuerpoperturbado.phi),2)+
+                     pow((cuerpo.thethap-cuerpoperturbado.thethap),2)+
+                     pow((cuerpo.phip-cuerpoperturbado.phip),2));
 
         
 
@@ -136,13 +140,17 @@ int main (void)
 
         //cuerpoperturbado.thetha=cuerpo.thetha+desv*(cuerpoperturbado.thetha-cuerpo.thetha)/(abs(cuerpoperturbado.thetha-cuerpo.thetha));
         
-        double t=i-10.0;
-        fprintf(file3,"%lf\n",coeflyu/(i+h)); //Guardo el coeficiente de lyupanov en el archivo
+        fprintf(file3,"%lf\n",coeflyu/(h+i+h)); //Guardo el coeficiente de lyupanov en el archivo
     }
-    coeflyu=coeflyu/(90*h);
+    coeflyu=coeflyu/(100*h);
     printf("%f\n",coeflyu);
-   
 
+    coeflyu=0; //Reinicio el coeficiente de lyupanov para la siguiente energía
+    desvsum=0; //Reinicio la suma de desviaciones para la siguiente energía
+    //Hago entre una energia y otra una separación en el archivo 
+    fprintf(file3, "\n");
+   
+}
 
     fclose(file);
     fclose(file2);

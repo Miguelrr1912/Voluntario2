@@ -102,9 +102,9 @@ int main (void)
     //Defino las variables
     cuerpos cuerpo;
     double E;
-    E=5;
-    cuerpo.thetha=0.4;
-    cuerpo.phi=0.1;
+    E=1;
+    cuerpo.thetha=0.05;
+    cuerpo.phi=0.75;
     cuerpo.thethap=sqrt(2*(E+9.8*(2*cos(cuerpo.thetha)+cos(cuerpo.phi))-3*9.8));
     //cuerpo.thethap=0;
     cuerpo.phip=0.0;
