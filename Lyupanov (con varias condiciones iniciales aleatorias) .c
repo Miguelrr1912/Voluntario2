@@ -101,9 +101,9 @@ int main (void)
         printf("Error opening file!\n");
         return 1;
     }
-
     
-    //Lo hago para 5 condiciones diferentes
+    //Lo hago para 5 condiciones diferentes y paralelizo
+    #pragma omp parallel for private(j)
     for(j=0; j<5;j++)
     {
 
@@ -121,13 +121,14 @@ int main (void)
     cuerpoperturbado.thethap=cuerpo.thethap+desv;
     cuerpoperturbado.phip=cuerpo.phip+desv;
     
-    //Para poder conocer los valores de las condiciones iniciales las voy a guardar en un archivo
+    #pragma omp critica
+    {//Para poder conocer los valores de las condiciones iniciales las voy a guardar en un archivo
     fprintf(file3, "%lf, %lf\n", cuerpo.thetha, cuerpo.phi);
 
     //Voy a guardar los resultados en un archivo
     fprintf(file, "%lf, %lf, %lf, %lf\n", cuerpo.thetha, cuerpo.phi, cuerpo.thethap, cuerpo.phip);
     fprintf(file2, "%lf, %lf, %lf, %lf\n", cuerpoperturbado.thetha, cuerpoperturbado.phi, cuerpoperturbado.thethap, cuerpoperturbado.phip);
-
+    }
 
     for(double i=0; i<100; i += h)
     {
@@ -147,6 +148,7 @@ int main (void)
 
         //cuerpoperturbado.thetha=cuerpo.thetha+desv*(cuerpoperturbado.thetha-cuerpo.thetha)/(abs(cuerpoperturbado.thetha-cuerpo.thetha));
         
+        #pragma omp critica
         fprintf(file3,"%lf\n",coeflyu/(h+i+h)); //Guardo el coeficiente de lyupanov en el archivo
     }
     coeflyu=coeflyu/(100*h);
