@@ -100,7 +100,8 @@ int main (void)
     }
 
     
-    //Lo hago para 5 energías diferentes
+    //Lo hago para 5 energías diferentes y paralelizo
+    #pragma omp parallel for private(j)
     for(j=0; j<num_energias;j++)
     {
     E=energias[j];
@@ -118,9 +119,10 @@ int main (void)
     
 
     //Voy a guardar los resultados en un archivo
-    fprintf(file, "%lf, %lf, %lf, %lf\n", cuerpo.thetha, cuerpo.phi, cuerpo.thethap, cuerpo.phip);
+    #pragma omp critica 
+    { fprintf(file, "%lf, %lf, %lf, %lf\n", cuerpo.thetha, cuerpo.phi, cuerpo.thethap, cuerpo.phip);
     fprintf(file2, "%lf, %lf, %lf, %lf\n", cuerpoperturbado.thetha, cuerpoperturbado.phi, cuerpoperturbado.thethap, cuerpoperturbado.phip);
-
+    }
 
     for(double i=0; i<100; i += h)
     {
@@ -139,7 +141,7 @@ int main (void)
         coeflyu+=log(fabs(desvsum)/fabs(desv));
 
         //cuerpoperturbado.thetha=cuerpo.thetha+desv*(cuerpoperturbado.thetha-cuerpo.thetha)/(abs(cuerpoperturbado.thetha-cuerpo.thetha));
-        
+        #pragma omp critica
         fprintf(file3,"%lf\n",coeflyu/(h+i+h)); //Guardo el coeficiente de lyupanov en el archivo
     }
     coeflyu=coeflyu/(100*h);
